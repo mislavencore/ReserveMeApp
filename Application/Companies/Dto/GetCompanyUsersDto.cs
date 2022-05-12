@@ -1,4 +1,4 @@
-﻿using Application.Users.Dto;
+﻿using Application.Authentication.Dto;
 using System.Collections.Generic;
 
 namespace Application.Companies.Dto
@@ -7,7 +7,6 @@ namespace Application.Companies.Dto
     {
         public int Id { get; set; }
         public string Name { get; set; }
-
         public List<ApplicationUserDto> Users { get; set; }
     }
 }

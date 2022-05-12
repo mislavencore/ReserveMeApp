@@ -11,6 +11,7 @@ namespace Persistance
         public DbSet<Item> Items { get; set; }
         public DbSet<Settings> Settings { get; set; }
         public DbSet<Company> Companies { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +29,16 @@ namespace Persistance
                 .HasOne(p => p.Company)
                 .WithMany(b => b.Items)
                 .HasForeignKey(p => p.CompanyId);
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(p => p.User)
+                .WithMany(b => b.Reservations)
+                .HasForeignKey(p => p.UserId);
+
+            modelBuilder.Entity<Reservation>()
+                .HasOne(p => p.Item)
+                .WithMany(b => b.Reservations)
+                .HasForeignKey(p => p.ItemId);
 
             base.OnModelCreating(modelBuilder);
         }

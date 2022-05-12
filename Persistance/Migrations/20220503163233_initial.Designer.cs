@@ -10,8 +10,8 @@ using Persistance;
 namespace Persistance.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220425223113_add1")]
-    partial class add1
+    [Migration("20220503163233_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -66,6 +66,12 @@ namespace Persistance.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -116,12 +122,62 @@ namespace Persistance.Migrations
                         .HasColumnType("int")
                         .UseIdentityColumn();
 
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Reservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberOfChildren")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReservationHolderName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReservationHolderPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpecialRequest")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("Domain.Entities.Settings", b =>
@@ -130,6 +186,9 @@ namespace Persistance.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .UseIdentityColumn();
+
+                    b.Property<int>("CompanyId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsWaitingListInUse")
                         .HasColumnType("bit");
@@ -143,9 +202,6 @@ namespace Persistance.Migrations
                     b.Property<int>("LengthOfReservation")
                         .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PrimaryColor")
                         .HasColumnType("nvarchar(max)");
 
@@ -155,7 +211,13 @@ namespace Persistance.Migrations
                     b.Property<int>("PrimeTimeMinutes")
                         .HasColumnType("int");
 
+                    b.Property<string>("SettingName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CompanyId")
+                        .IsUnique();
 
                     b.ToTable("Settings");
                 });
@@ -302,6 +364,49 @@ namespace Persistance.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Item", b =>
+                {
+                    b.HasOne("Domain.Entities.Company", "Company")
+                        .WithMany("Items")
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("Domain.Entities.Company", null)
+                        .WithMany("Reservations")
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("Domain.Entities.Item", "Item")
+                        .WithMany("Reservations")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "User")
+                        .WithMany("Reservations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Settings", b =>
+                {
+                    b.HasOne("Domain.Entities.Company", "Company")
+                        .WithOne("Settings")
+                        .HasForeignKey("Domain.Entities.Settings", "CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -353,9 +458,25 @@ namespace Persistance.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("Reservations");
+                });
+
             modelBuilder.Entity("Domain.Entities.Company", b =>
                 {
+                    b.Navigation("Items");
+
+                    b.Navigation("Reservations");
+
+                    b.Navigation("Settings");
+
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Item", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

@@ -64,6 +64,12 @@ namespace Persistance.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -120,11 +126,56 @@ namespace Persistance.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NumberOfGuests")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
 
                     b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Reservation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .UseIdentityColumn();
+
+                    b.Property<int?>("CompanyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ItemId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberOfChildren")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReservationHolderName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReservationHolderPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SpecialRequest")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompanyId");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("Domain.Entities.Settings", b =>
@@ -322,6 +373,27 @@ namespace Persistance.Migrations
                     b.Navigation("Company");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Reservation", b =>
+                {
+                    b.HasOne("Domain.Entities.Company", null)
+                        .WithMany("Reservations")
+                        .HasForeignKey("CompanyId");
+
+                    b.HasOne("Domain.Entities.Item", "Item")
+                        .WithMany("Reservations")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.ApplicationUser", "User")
+                        .WithMany("Reservations")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("Item");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Settings", b =>
                 {
                     b.HasOne("Domain.Entities.Company", "Company")
@@ -384,13 +456,25 @@ namespace Persistance.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.ApplicationUser", b =>
+                {
+                    b.Navigation("Reservations");
+                });
+
             modelBuilder.Entity("Domain.Entities.Company", b =>
                 {
                     b.Navigation("Items");
 
+                    b.Navigation("Reservations");
+
                     b.Navigation("Settings");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Item", b =>
+                {
+                    b.Navigation("Reservations");
                 });
 #pragma warning restore 612, 618
         }

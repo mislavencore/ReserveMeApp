@@ -1,6 +1,9 @@
-﻿using Domain.Entities;
+﻿using AutoMapper;
+using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Persistance;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,17 +19,25 @@ namespace Application.Users.Commands
 
         public class Handler : IRequestHandler<Request, object>
         {
-            private UserManager<ApplicationUser> _userManager;
+            private readonly UserManager<ApplicationUser> _userManager;
+            private readonly IMapper _mapper;
 
-            public Handler(UserManager<ApplicationUser> userManager) => _userManager = userManager;
+            public Handler(IMapper mapper, UserManager<ApplicationUser> userManager)
+            {
+                _userManager = userManager;
+                _mapper = mapper;
+            }
 
             public async Task<object> Handle(Request request, CancellationToken cancellationToken)
             {
-                var user = await _userManager.FindByIdAsync(request.UserId);
+                var user = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == request.UserId);
+                //if (user == null) 
+                //    return new { Error = "Unsuported user" };
 
-                var result = await _userManager.DeleteAsync(user);
+                //_userManager.dele(user);
+                //await _.SaveChangesAsync();
 
-                return new { Result = result };
+                return new { Success = "da" };
             }
         }
     }

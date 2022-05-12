@@ -10,6 +10,8 @@ namespace Domain.Entities
 
         public IEnumerable<ApplicationUser> Users { get; set; }
         public IEnumerable<Item> Items { get; set; }
+        public IEnumerable<Reservation> Reservations { get; set; }
         public Settings Settings { get; set; }
+
     }
 }
